@@ -13,51 +13,124 @@ public class Main {
     public static Double[] y1 = {};
     public static Double[] x2 = {};
     public static Double[] y2 = {};
+
+    public static Boolean first = true;
+
+    private static final int WINDOW_WIDTH = 800;
+    private static final int WINDOW_HEIGHT = 600;
+    private static final int LINE_LENGTH = 100;
+
+    public Main() {
+        EventQueue.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+                } catch (ClassNotFoundException ex) {
+                } catch (InstantiationException ex) {
+                } catch (IllegalAccessException ex) {
+                } catch (UnsupportedLookAndFeelException ex) {
+                }
+
+                JFrame frame = new JFrame();
+                frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                frame.setLayout(new BorderLayout());
+                frame.add(new BouncingGroupK());
+                frame.setSize(WINDOW_WIDTH, WINDOW_HEIGHT);
+                frame.setVisible(true);
+            }
+        });
+    }
+
+    public class BouncingGroupK extends JPanel {
+
+        private double[] x1 = {10.0, 30.0, 30.0, 50.0, 70.0, 45.0, 70.0, 50.0, 30.0, 30.0, 10.0};
+        private double[] y1 = {10.0, 10.0, 50.0, 10.0, 10.0, 60.0, 110.0, 110.0, 70.0, 110.0, 110.0};
+        private double[] x2 = {30.0, 30.0, 50.0, 70.0, 45.0, 70.0, 50.0, 30.0, 30.0, 10.0, 10.0};
+        private double[] y2 = {10.0, 50.0, 10.0, 10.0, 60.0, 110.0, 110.0, 70.0, 110.0, 110.0, 10.0};
+
+        private double dx = 2.0;
+        private double dy = 2.0;
+
+        public BouncingGroupK() {
+            setLayout(null);
+
+            Timer timer = new Timer(20, e -> {
+                for (int i = 0; i < x1.length; i++) {
+                    x1[i] += dx;
+                    y1[i] += dy;
+                    x2[i] += dx;
+                    y2[i] += dy;
+                }
+
+                // Check for collisions with the frame boundaries
+                boolean hitBoundary_x = false;
+                boolean hitBoundary_y = false;
+                for (int i = 0; i < x1.length; i++) {
+                    if (x1[i] < 0 || x2[i] > getWidth()) {
+                        hitBoundary_x = true;
+                        break;
+                    }
+                    if (y1[i] < 0 || y2[i] > getHeight()){
+                        hitBoundary_y = true;
+                        break;
+                    }
+                }
+
+                if (hitBoundary_x) {
+                    // If any line hits the boundary, reverse the direction for all lines
+                    dx *= -1;
+                    dy *= 1;
+                }
+                if (hitBoundary_y) {
+                    // If any line hits the boundary, reverse the direction for all lines
+                    dx *= 1;
+                    dy *= -1;
+                }
+
+                repaint();
+            });
+            timer.start();
+        }
+
+        @Override
+        protected void paintComponent(Graphics g) {
+            super.paintComponent(g);
+            Graphics2D g2 = (Graphics2D) g;
+
+            g2.setColor(Color.red);
+            for (int i = 0; i < x1.length; i++) {
+                Line2D line = new Line2D.Double(x1[i], y1[i], x2[i], y2[i]);
+                g2.draw(line);
+            }
+        }
+
+        @Override
+        public Dimension getPreferredSize() {
+            return new Dimension(WINDOW_WIDTH, WINDOW_HEIGHT);
+        }
+    }
+
     public static void main(String[] args) {
         JFrame frame = new JFrame();
-        frame.setTitle("Computer Graphics");
+        frame.setTitle("Computer Graphics - Kevin");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setResizable(true);
+        frame.setResizable(false);
         frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
         frame.add(new MyPanel());
         frame.setMaximumSize(new Dimension(1200, 800));
         frame.setBackground(Color.GRAY);
-
-//        frame.add(new InitialPanel());
+        setDefault();
         frame.setVisible(true);
-//        frame.pack();
     }
 
-    public static void setDefault(){
+    public static void setDefault() {
         x1 = new Double[]{10.0, 30.0, 30.0, 50.0, 70.0, 45.0, 70.0, 50.0, 30.0, 30.0, 10.0};
         y1 = new Double[]{10.0, 10.0, 50.0, 10.0, 10.0, 60.0, 110.0, 110.0, 70.0, 110.0, 110.0};
         x2 = new Double[]{30.0, 30.0, 50.0, 70.0, 45.0, 70.0, 50.0, 30.0, 30.0, 10.0, 10.0};
         y2 = new Double[]{10.0, 50.0, 10.0, 10.0, 60.0, 110.0, 110.0, 70.0, 110.0, 110.0, 10.0};
     }
-
-
 }
-
-//class FirstPanel extends JPanel {
-//    public FirstPanel() {
-//        setPreferredSize(new Dimension(1200, 800));
-//        setBackground(Color.BLACK);
-//    }
-//
-//    @Override
-//    public void paintComponent(Graphics graph) {
-//        super.paintComponent(graph);
-//        Graphics2D g2d = (Graphics2D) graph; // cast to get 2D drawing methods
-//
-//        g2d.setColor(Color.BLUE);
-//        g2d.setStroke(new BasicStroke(2));
-//        for (int i = 0; i < 11; i++) {
-//            Line2D k_normal = new Line2D.Double(Main.x1[i], Main.y1[i], Main.x2[i], Main.y2[i]);
-//            g2d.draw(k_normal);
-//        }
-//    }
-//}
-
 
 class MyPanel extends JPanel {
 
@@ -76,9 +149,24 @@ class MyPanel extends JPanel {
                 super.paintComponent(graph);
                 Graphics2D g2d = (Graphics2D) graph;
 
+                int w = this.getWidth();
+                int h = this.getHeight();
+
+                while (Main.first) {
+                    if (Main.x1.length != 0 && Main.y1.length != 0 && Main.x2.length != 0 && Main.y2.length != 0) {
+                        for (int i = 0; i < Main.x1.length; i++) {
+                            Main.x1[i] = Main.x1[i] + (w * 0.5);
+                            Main.y1[i] = Main.y1[i] + (h * 0.4);
+                            Main.x2[i] = Main.x2[i] + (w * 0.5);
+                            Main.y2[i] = Main.y2[i] + (h * 0.4);
+                        }
+                    }
+                    Main.first = false;
+                }
+
                 g2d.setColor(Color.BLUE);
                 g2d.setStroke(new BasicStroke(2));
-                if (Main.x1.length != 0) {
+                if (Main.x1.length != 0 && Main.y1.length != 0 && Main.x2.length != 0 && Main.y2.length != 0) {
                     for (int i = 0; i < Main.x1.length; i++) {
                         Line2D k_normal = new Line2D.Double(Main.x1[i], Main.y1[i], Main.x2[i], Main.y2[i]);
                         g2d.draw(k_normal);
@@ -86,6 +174,7 @@ class MyPanel extends JPanel {
                 }
             }
         };
+
         paintComponentPanel.setBorder(BorderFactory.createLineBorder(Color.BLACK));
         add(paintComponentPanel, BorderLayout.CENTER);
 
@@ -175,6 +264,7 @@ class MyPanel extends JPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 Main.setDefault();
+                Main.first = true;
                 // Update paint component here
                 paintComponentPanel.repaint();
             }
@@ -193,10 +283,20 @@ class MyPanel extends JPanel {
             }
         });
         formPanel.add(pickAnchorPoint);
+
+        //button for run animation
+        JButton runAnimation = new JButton("Run Animation (tuing tuing)");
+        runAnimation.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                new Main();
+            }
+        });
+        formPanel.add(runAnimation);
     }
 
     //pick anchor point using mouse
-    public void pickAnchorPoint(){
+    public void pickAnchorPoint() {
         addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 System.out.println("X: " + evt.getX() + " Y: " + evt.getY());
@@ -348,75 +448,75 @@ class CustomTextField extends JTextField {
 }
 
 //class matrix multiplication
-class makeRotation{
-    public static void calculate(Double[] x1, Double[] y1, Double[] x2, Double[] y2, Double rotation, Double anchorX, Double anchorY){
+class makeRotation {
+    public static void calculate(Double[] x1, Double[] y1, Double[] x2, Double[] y2, Double rotation, Double anchorX, Double anchorY) {
         rotation = Math.toRadians(rotation);
         for (int l = 0; l < x1.length; l++) {
-        Double[][] matrixTranslateBack = {
-                {1.0, 0.0, anchorX},
-                {0.0, 1.0, anchorY},
-                {0.0, 0.0, 1.0},
-        };
-        Double[][] matrixRotate = {
-                {Math.cos(rotation), -Math.sin(rotation), 0.0},
-                {Math.sin(rotation), Math.cos(rotation), 0.0},
-                {0.0, 0.0, 1.0},
-        };
-        Double[][] matrixTranslateToOrigin = {
-                {1.0, 0.0, -anchorX},
-                {0.0, 1.0, -anchorY},
-                {0.0, 0.0, 1.0},
-        };
-        Double[] matrixPoint1 = {
-                x1[l],
-                y1[l],
-                1.0,
-        };
-        Double[] matrixPoint2 = {
-                x2[l],
-                y2[l],
-                1.0,
-        };
+            Double[][] matrixTranslateBack = {
+                    {1.0, 0.0, anchorX},
+                    {0.0, 1.0, anchorY},
+                    {0.0, 0.0, 1.0},
+            };
+            Double[][] matrixRotate = {
+                    {Math.cos(rotation), -Math.sin(rotation), 0.0},
+                    {Math.sin(rotation), Math.cos(rotation), 0.0},
+                    {0.0, 0.0, 1.0},
+            };
+            Double[][] matrixTranslateToOrigin = {
+                    {1.0, 0.0, -anchorX},
+                    {0.0, 1.0, -anchorY},
+                    {0.0, 0.0, 1.0},
+            };
+            Double[] matrixPoint1 = {
+                    x1[l],
+                    y1[l],
+                    1.0,
+            };
+            Double[] matrixPoint2 = {
+                    x2[l],
+                    y2[l],
+                    1.0,
+            };
 
-        //multiply matrix matrixTranslateBack and matrixRotate
-        Double[][] matrixTranslateBackRotate = new Double[3][3];
-        for (int i = 0; i < matrixTranslateBackRotate.length; i++) {
-            for (int j = 0; j < matrixTranslateBackRotate[i].length; j++) {
-                matrixTranslateBackRotate[i][j] = 0.0;
-                for (int k = 0; k < matrixTranslateBackRotate.length; k++) {
-                    matrixTranslateBackRotate[i][j] += matrixTranslateBack[i][k] * matrixRotate[k][j];
+            //multiply matrix matrixTranslateBack and matrixRotate
+            Double[][] matrixTranslateBackRotate = new Double[3][3];
+            for (int i = 0; i < matrixTranslateBackRotate.length; i++) {
+                for (int j = 0; j < matrixTranslateBackRotate[i].length; j++) {
+                    matrixTranslateBackRotate[i][j] = 0.0;
+                    for (int k = 0; k < matrixTranslateBackRotate.length; k++) {
+                        matrixTranslateBackRotate[i][j] += matrixTranslateBack[i][k] * matrixRotate[k][j];
+                    }
                 }
             }
-        }
 
-        //multiply matrix matrixTranslateBackRotate and matrixTranslateToOrigin
-        Double[][] matrixTranslateBackRotateTranslateToOrigin = new Double[3][3];
-        for (int i = 0; i < matrixTranslateBackRotateTranslateToOrigin.length; i++) {
-            for (int j = 0; j < matrixTranslateBackRotateTranslateToOrigin[i].length; j++) {
-                matrixTranslateBackRotateTranslateToOrigin[i][j] = 0.0;
-                for (int k = 0; k < matrixTranslateBackRotateTranslateToOrigin.length; k++) {
-                    matrixTranslateBackRotateTranslateToOrigin[i][j] += matrixTranslateBackRotate[i][k] * matrixTranslateToOrigin[k][j];
+            //multiply matrix matrixTranslateBackRotate and matrixTranslateToOrigin
+            Double[][] matrixTranslateBackRotateTranslateToOrigin = new Double[3][3];
+            for (int i = 0; i < matrixTranslateBackRotateTranslateToOrigin.length; i++) {
+                for (int j = 0; j < matrixTranslateBackRotateTranslateToOrigin[i].length; j++) {
+                    matrixTranslateBackRotateTranslateToOrigin[i][j] = 0.0;
+                    for (int k = 0; k < matrixTranslateBackRotateTranslateToOrigin.length; k++) {
+                        matrixTranslateBackRotateTranslateToOrigin[i][j] += matrixTranslateBackRotate[i][k] * matrixTranslateToOrigin[k][j];
+                    }
                 }
             }
-        }
 
-        //multiply matrix matrixTranslateBackRotateTranslateToOrigin and matrixPoint1
-        Double[] matrixPoint1Result = new Double[3];
-        for (int i = 0; i < matrixPoint1Result.length; i++) {
-            matrixPoint1Result[i] = 0.0;
-            for (int j = 0; j < matrixPoint1.length; j++) {
-                matrixPoint1Result[i] += matrixTranslateBackRotateTranslateToOrigin[i][j] * matrixPoint1[j];
+            //multiply matrix matrixTranslateBackRotateTranslateToOrigin and matrixPoint1
+            Double[] matrixPoint1Result = new Double[3];
+            for (int i = 0; i < matrixPoint1Result.length; i++) {
+                matrixPoint1Result[i] = 0.0;
+                for (int j = 0; j < matrixPoint1.length; j++) {
+                    matrixPoint1Result[i] += matrixTranslateBackRotateTranslateToOrigin[i][j] * matrixPoint1[j];
+                }
             }
-        }
 
-        //multiply matrix matrixTranslateBackRotateTranslateToOrigin and matrixPoint2
-        Double[] matrixPoint2Result = new Double[3];
-        for (int i = 0; i < matrixPoint2Result.length; i++) {
-            matrixPoint2Result[i] = 0.0;
-            for (int j = 0; j < matrixPoint2.length; j++) {
-                matrixPoint2Result[i] += matrixTranslateBackRotateTranslateToOrigin[i][j] * matrixPoint2[j];
+            //multiply matrix matrixTranslateBackRotateTranslateToOrigin and matrixPoint2
+            Double[] matrixPoint2Result = new Double[3];
+            for (int i = 0; i < matrixPoint2Result.length; i++) {
+                matrixPoint2Result[i] = 0.0;
+                for (int j = 0; j < matrixPoint2.length; j++) {
+                    matrixPoint2Result[i] += matrixTranslateBackRotateTranslateToOrigin[i][j] * matrixPoint2[j];
+                }
             }
-        }
 
             x1[l] = matrixPoint1Result[0];
             y1[l] = matrixPoint1Result[1];
@@ -427,8 +527,8 @@ class makeRotation{
 }
 
 //class dilatation using matrix
-class makeDilatation{
-    public static void calculate(Double[] x1, Double[] y1, Double[] x2, Double[] y2, Double dilatation, Double anchorX, Double anchorY){
+class makeDilatation {
+    public static void calculate(Double[] x1, Double[] y1, Double[] x2, Double[] y2, Double dilatation, Double anchorX, Double anchorY) {
         for (int l = 0; l < x1.length; l++) {
             Double[][] matrixTranslateBack = {
                     {1.0, 0.0, anchorX},
@@ -503,3 +603,5 @@ class makeDilatation{
         }
     }
 }
+
+
